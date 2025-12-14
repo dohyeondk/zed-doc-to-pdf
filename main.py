@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import os
 import re
-import fitz  # PyMuPDF
+from pypdf import PdfWriter, PdfReader
 
 
 def get_zed_toc_items():
@@ -107,9 +107,8 @@ def merge_pdfs_with_toc(toc_items, output_dir, output_path):
         output_dir: Directory containing the individual PDF files
         output_path: Path for the output merged PDF
     """
-    merged_pdf = fitz.open()
-    toc = []
-
+    writer = PdfWriter()
+    
     print("\nMerging PDFs with table of contents...")
 
     for i, item in enumerate(toc_items, 1):
@@ -121,34 +120,31 @@ def merge_pdfs_with_toc(toc_items, output_dir, output_path):
 
         try:
             # Open the PDF
-            pdf_doc = fitz.open(pdf_path)
+            reader = PdfReader(pdf_path)
 
             # Record the starting page number for this document
-            start_page = len(merged_pdf)
+            start_page = len(writer.pages)
 
-            # Insert all pages from this PDF
-            merged_pdf.insert_pdf(pdf_doc)
+            # Append all pages from this PDF
+            for page in reader.pages:
+                writer.add_page(page)
 
-            # Add bookmark for this section (level 1, page number is 0-indexed but we add 1 for display)
-            toc.append([1, item['title'], start_page + 1])
+            # Add bookmark for this section at the starting page
+            writer.add_outline_item(item['title'], start_page)
 
-            pdf_doc.close()
             print(f"    [{i}/{len(toc_items)}] Added: {item['title']} (page {start_page + 1})")
 
         except Exception as e:
             print(f"    ✗ Error merging {pdf_path}: {e}")
 
-    # Set the table of contents
-    if toc:
-        merged_pdf.set_toc(toc)
-        print(f"\n✓ Created TOC with {len(toc)} entries")
-
-    # Get total pages before closing
-    total_pages = len(merged_pdf)
+    # Get total pages
+    total_pages = len(writer.pages)
+    
+    print(f"\n✓ Created TOC with {len(toc_items)} entries")
 
     # Save the merged PDF
-    merged_pdf.save(output_path)
-    merged_pdf.close()
+    with open(output_path, 'wb') as output_file:
+        writer.write(output_file)
 
     print(f"✓ Merged PDF saved to: {output_path}")
     print(f"  Total pages: {total_pages}")
