@@ -6,6 +6,38 @@ import re
 from pypdf import PdfWriter, PdfReader
 
 
+# Custom CSS for PDF generation
+custom_css = """
+@media print {
+    #sidebar, .header-bar, .toc-container, .footer-buttons {
+        display: none;
+    }
+}
+
+body, #body-container {
+    height: auto;
+    overflow: auto;
+}
+
+#content {
+    font-weight: 500;
+    font-family: "Helvetica Neue", sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Georgia", serif !important;
+}
+
+code {
+    font-family: "Menlo", monospace !important;
+}
+
+#content, blockquote > p, table {
+    font-size: 0.8em;
+}
+"""
+
+
 def get_zed_toc_items():
     """
     Get the list of TOC items from Zed documentation.
@@ -108,7 +140,7 @@ def merge_pdfs_with_toc(toc_items, output_dir, output_path):
         output_path: Path for the output merged PDF
     """
     writer = PdfWriter()
-    
+
     print("\nMerging PDFs with table of contents...")
 
     for i, item in enumerate(toc_items, 1):
@@ -139,13 +171,13 @@ def merge_pdfs_with_toc(toc_items, output_dir, output_path):
 
     # Get total pages
     total_pages = len(writer.pages)
-    
+
     # Set PDF metadata
     writer.add_metadata({
         '/Title': 'Zed Documentation',
         '/Author': 'Zed Industries'
     })
-    
+
     print(f"\n✓ Created TOC with {len(toc_items)} entries")
 
     # Save the merged PDF
@@ -162,29 +194,6 @@ def main():
     # Configuration
     output_dir = "zed-docs-pdf"
     merged_output = "Zed.pdf"
-
-    # Custom CSS for PDF generation
-    custom_css = """
-    @media print {
-        #sidebar, .header-bar, .toc-container, .footer-buttons {
-            display: none;
-        }
-    }
-
-    body, #body-container {
-        height: auto;
-        overflow: auto;
-    }
-
-    #content {
-        font-weight: 500;
-        font-family: "SF Pro Text";
-    }
-
-    #content, blockquote > p, table {
-        font-size: 0.8em;
-    }
-    """
 
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
