@@ -8,6 +8,27 @@ from pypdf import PdfWriter, PdfReader
 
 # Custom CSS for PDF generation
 custom_css = """
+@font-face {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 500;
+  src: url("https://raw.githubusercontent.com/blaisck/sfwin/master/SFPro/TrueType/SFProText-Medium.ttf");
+}
+
+@font-face {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 700;
+  src: url("https://raw.githubusercontent.com/blaisck/sfwin/master/SFPro/TrueType/SFProText-Bold.ttf");
+}
+
+@font-face {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 900;
+  src: url("https://raw.githubusercontent.com/blaisck/sfwin/master/SFPro/TrueType/SFProText-Heavy.ttf");
+}
+
 @media print {
     #sidebar, .header-bar, .toc-container, .footer-buttons {
         display: none;
@@ -15,13 +36,13 @@ custom_css = """
 }
 
 body, #body-container {
-    height: auto;
-    overflow: auto;
+    height: inherit;
+    overflow: inherit;
 }
 
 #content {
     font-weight: 500;
-    font-family: "Helvetica Neue", sans-serif !important;
+    font-family: "SF Pro Text", sans-serif !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -34,6 +55,11 @@ code {
 
 #content, blockquote > p, table {
     font-size: 0.8em;
+}
+
+.content main {
+    margin-inline-start: inherit;
+    margin-inline-end: inherit;
 }
 """
 
