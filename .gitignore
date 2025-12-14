@@ -9,5 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
+.DS_Store
 *.pdf
 zed-docs-pdf/
