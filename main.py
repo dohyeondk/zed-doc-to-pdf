@@ -140,6 +140,12 @@ def merge_pdfs_with_toc(toc_items, output_dir, output_path):
     # Get total pages
     total_pages = len(writer.pages)
     
+    # Set PDF metadata
+    writer.add_metadata({
+        '/Title': 'Zed Documentation',
+        '/Author': 'Zed Industries'
+    })
+    
     print(f"\n✓ Created TOC with {len(toc_items)} entries")
 
     # Save the merged PDF
