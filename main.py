@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import os
 import re
+import fitz  # PyMuPDF
 
 
 def get_zed_toc_items():
@@ -64,6 +65,12 @@ def sanitize_filename(filename):
     return re.sub(r'[<>:"/\\|?*]', '', filename)
 
 
+def get_pdf_filename(index, item):
+    """Generate PDF filename from index and TOC item."""
+    title = sanitize_filename(item['title'])
+    return f"{index:03d}. {title}.pdf"
+
+
 def download_page_as_pdf(url, output_path, custom_css):
     """Download a web page as PDF with custom CSS."""
     if os.path.exists(output_path):
@@ -91,7 +98,69 @@ def download_page_as_pdf(url, output_path, custom_css):
         return True
 
 
+def merge_pdfs_with_toc(toc_items, output_dir, output_path):
+    """
+    Merge multiple PDFs into a single file with a working table of contents.
+
+    Args:
+        toc_items: List of dictionaries with 'title' key for each PDF
+        output_dir: Directory containing the individual PDF files
+        output_path: Path for the output merged PDF
+    """
+    merged_pdf = fitz.open()
+    toc = []
+
+    print("\nMerging PDFs with table of contents...")
+
+    for i, item in enumerate(toc_items, 1):
+        pdf_path = os.path.join(output_dir, get_pdf_filename(i, item))
+
+        if not os.path.exists(pdf_path):
+            print(f"    ⚠ Skipping missing file: {pdf_path}")
+            continue
+
+        try:
+            # Open the PDF
+            pdf_doc = fitz.open(pdf_path)
+
+            # Record the starting page number for this document
+            start_page = len(merged_pdf)
+
+            # Insert all pages from this PDF
+            merged_pdf.insert_pdf(pdf_doc)
+
+            # Add bookmark for this section (level 1, page number is 0-indexed but we add 1 for display)
+            toc.append([1, item['title'], start_page + 1])
+
+            pdf_doc.close()
+            print(f"    [{i}/{len(toc_items)}] Added: {item['title']} (page {start_page + 1})")
+
+        except Exception as e:
+            print(f"    ✗ Error merging {pdf_path}: {e}")
+
+    # Set the table of contents
+    if toc:
+        merged_pdf.set_toc(toc)
+        print(f"\n✓ Created TOC with {len(toc)} entries")
+
+    # Get total pages before closing
+    total_pages = len(merged_pdf)
+
+    # Save the merged PDF
+    merged_pdf.save(output_path)
+    merged_pdf.close()
+
+    print(f"✓ Merged PDF saved to: {output_path}")
+    print(f"  Total pages: {total_pages}")
+
+    return output_path
+
+
 def main():
+    # Configuration
+    output_dir = "zed-docs-pdf"
+    merged_output = "Zed.pdf"
+
     # Custom CSS for PDF generation
     custom_css = """
     @media print {
@@ -116,7 +185,6 @@ def main():
     """
 
     # Create output directory
-    output_dir = "zed-docs-pdf"
     os.makedirs(output_dir, exist_ok=True)
 
     print("Fetching Zed documentation TOC items...\n")
@@ -127,8 +195,7 @@ def main():
 
         # Download each page as PDF
         for i, item in enumerate(items, 1):
-            title = sanitize_filename(item['title'])
-            filename = f"{i:03d}. {title}.pdf"
+            filename = get_pdf_filename(i, item)
             output_path = os.path.join(output_dir, filename)
 
             print(f"[{i}/{len(items)}] Downloading: {item['title']}")
@@ -143,8 +210,12 @@ def main():
                     print("    ↷ Skipped (already exists)\n")
             except Exception as e:
                 print(f"    ✗ Error: {e}\n")
+                exit(1)
 
         print(f"\nAll PDFs saved to: {output_dir}/")
+
+        # Merge all PDFs into a single file with TOC
+        merge_pdfs_with_toc(items, output_dir, merged_output)
 
     except Exception as e:
         print(f"Error: {e}")

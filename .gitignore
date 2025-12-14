@@ -9,4 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
+*.pdf
 zed-docs-pdf/
