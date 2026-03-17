@@ -9,7 +9,7 @@ from pypdf import PdfWriter, PdfReader
 # Custom CSS for PDF generation
 custom_css = """
 @media print {
-    #sidebar, .header-bar, .toc-container, .footer-buttons {
+    #sidebar, .header-bar, .toc-container, .footer-buttons, footer {
         display: none;
     }
 }
