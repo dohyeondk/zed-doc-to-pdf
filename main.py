@@ -8,10 +8,8 @@ from pypdf import PdfWriter, PdfReader
 
 # Custom CSS for PDF generation
 custom_css = """
-@media print {
-    #sidebar, .header-bar, .toc-container, .footer-buttons, footer {
-        display: none;
-    }
+#sidebar, .header-bar, .toc-container, .footer-buttons, footer.footer, .pagetoc {
+    display: none !important;
 }
 
 body, #body-container {
