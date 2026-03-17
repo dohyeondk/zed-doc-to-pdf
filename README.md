@@ -1,3 +1,11 @@
+> [!IMPORTANT]
+> ## This repository has moved
+> This project has been consolidated into a monorepo: **[dohyeondk/doc-to-pdf](https://github.com/dohyeondk/doc-to-pdf)**
+>
+> Please use the new repository for all future updates and issues.
+
+---
+
 # Zed Documentation to PDF
 
 A Python script that downloads the entire [Zed editor documentation](https://zed.dev/docs) and merges it into a single PDF file with a working table of contents.
